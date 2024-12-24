@@ -157,27 +157,31 @@ function fetchSuggestions(query) {
     const xhr = new XMLHttpRequest();
     xhr.open("GET", "fetch_suggestions.php?query=" + encodeURIComponent(query), true);
     xhr.onload = function() {
-    if (this.status === 200) {
-        try {
-            const suggestions = JSON.parse(this.responseText); // Parse la réponse JSON
-            console.log(suggestions); // Affiche les suggestions dans la console pour vérification
+        if (this.status === 200) {
+            try {
+                const suggestions = JSON.parse(this.responseText); // Parse la réponse JSON
+                console.log(suggestions); // Affiche les suggestions dans la console pour vérification
 
-            let html = "";
-            suggestions.forEach(item => {
-                html += `<div onclick="selectSuggestion(${item.idProduct}, '${item.name}')">${item.name}</div>`;
-            });
+                let html = "";
+                if (suggestions.length > 0) {
+                    suggestions.forEach(item => {
+                        html += `<div onclick="selectSuggestion(${item.idProduct}, '${item.name}')">${item.name}</div>`;
+                    });
+                } else {
+                    // Affichage d'un message personnalisé avec le texte de la recherche
+                    html = `<div>Aucun résultat trouvé pour la recherche : <strong>${query}</strong></div>`;
+                }
 
-            // Affiche les suggestions dans l'élément #suggestions
-            document.getElementById("suggestions").innerHTML = html;
-            document.getElementById("suggestions").style.display = "block"; // Forcer l'affichage
-            document.getElementById("suggestions").classList.remove("hidden");
-            console.log("Suggestions mises à jour et affichées");
-            console.log(document.getElementById("suggestions").style);  // Affiche les styles appliqués à l'élément            
-        } catch (e) {
-            console.error("Erreur de parsing JSON : ", e);
+                // Affiche les suggestions dans l'élément #suggestions
+                document.getElementById("suggestions").innerHTML = html;
+                document.getElementById("suggestions").style.display = "block"; // Forcer l'affichage
+                document.getElementById("suggestions").classList.remove("hidden");
+                console.log("Suggestions mises à jour et affichées");
+            } catch (e) {
+                console.error("Erreur de parsing JSON : ", e);
+            }
         }
-    }
-};
+    };
     xhr.onerror = function() {
         document.getElementById("suggestions").innerHTML = "<div>Network error</div>";
         document.getElementById("suggestions").classList.remove("hidden");

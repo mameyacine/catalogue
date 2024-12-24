@@ -1,17 +1,32 @@
 <?php
-// Get search query
-$query = isset($_GET['query']) ? $_GET['query'] : '';
-
-// Connect to the database
+// Connexion à la base de données
 $pdo = new PDO("mysql:host=localhost;dbname=catalogue", "root", "");
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-// Fetch product names matching the query
-$stmt = $pdo->prepare("SELECT idProduct, name FROM Products WHERE name LIKE :query LIMIT 10");
-$stmt->execute(['query' => '%' . $query . '%']);
+// Récupérer le terme de recherche
+$query = isset($_GET['query']) ? $_GET['query'] : '';
+
+// Séparer les mots de la recherche
+$searchTerms = explode(' ', trim($query));
+
+// Construire la requête SQL dynamiquement
+$sql = "SELECT idProduct, name FROM Products WHERE 1=1";
+$params = [];
+
+foreach ($searchTerms as $key => $term) {
+    $paramName = ":term" . $key;
+    $sql .= " AND name LIKE " . $paramName;
+    $params[$paramName] = '%' . $term . '%';
+}
+
+$sql .= " LIMIT 10";
+
+// Exécuter la requête
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
 $suggestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Ensure that the response is valid JSON
+// Retourner une réponse JSON
 header('Content-Type: application/json');
 echo json_encode($suggestions);
 ?>
