@@ -1,10 +1,16 @@
 /* ✅ Styles Généraux */
-header {
-    background-color: #176b61;
+
+.custom-button {
+    margin-top: 1rem; /* mt-4 */
+    background-color: #176b61; /* bg-[#176b61] */
+    color: white; /* text-white */
+    padding: 0.5rem 1rem; /* px-4 py-2 */
+    border-radius: 0.375rem; /* rounded */
+    transition: background-color 0.3s ease; /* pour un effet de transition en douceur */
 }
 
-button {
-    background-color: #176b61;
+.custom-button:hover {
+    background-color: #145b50; /* hover:bg-[#145b50] */
 }
 
 /* ✅ Footer Styles */
@@ -45,4 +51,45 @@ button {
 .social-icons a:hover {
     color: #fff;
     background-color: #29aafe;
+}
+
+a:hover {
+    background-color: #145b50;
+    color: white;
+}
+
+
+#search {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    position: relative;
+    margin-bottom: 5px; /* Espace entre la barre de recherche et les suggestions */
+}
+
+#suggestions {
+    position: absolute; /* Positionnement absolu par rapport à l'input */
+    top: calc(100% + 5px); /* Juste sous l'input avec un petit espace */
+    left: 0;
+    right: 0;
+    z-index: 10; /* Garder les suggestions au-dessus des autres éléments */
+    display: none; /* Par défaut caché */
+    max-height: 200px; /* Limite de hauteur */
+    overflow-y: auto; /* Défilement si trop de suggestions */
+    background-color: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+#suggestions div {
+    padding: 8px;
+    cursor: pointer; /* Curseur pointeur pour indiquer que c'est cliquable */
+}
+
+#suggestions div:hover {
+    background-color: #f1f1f1; /* Changement de couleur au survol */
+}
+
+.hidden {
+    display: none; /* Assurez-vous qu'elle fonctionne correctement */
 }
