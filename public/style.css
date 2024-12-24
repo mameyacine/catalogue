@@ -64,21 +64,26 @@ a:hover {
     padding: 10px;
     border: 1px solid #ccc;
     position: relative;
-    margin-bottom: 5px; /* Espace entre la barre de recherche et les suggestions */
 }
 
 #suggestions {
     position: absolute; /* Positionnement absolu par rapport à l'input */
-    top: calc(100% + 5px); /* Juste sous l'input avec un petit espace */
+    top: calc(100%); /* Positionne les suggestions juste sous l'input, sans espace */
     left: 0;
     right: 0;
-    z-index: 10; /* Garder les suggestions au-dessus des autres éléments */
+    z-index: 20; /* Assurez-vous que les suggestions sont bien au-dessus des autres éléments */
     display: none; /* Par défaut caché */
     max-height: 200px; /* Limite de hauteur */
     overflow-y: auto; /* Défilement si trop de suggestions */
     background-color: white;
     border: 1px solid #ccc;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+form {
+    position: relative;
+    z-index: 20; /* Garder le formulaire au-dessus de l'overlay */
+    margin: 0; /* Ajouter cette ligne pour éviter toute marge */
 }
 
 #suggestions div {

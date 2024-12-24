@@ -53,7 +53,7 @@ try {
     <img src="images/logo-removebg.png" alt="Logo" class="h-full ml-2 object-contain">
     
     <!-- Barre de recherche -->
-    <form method="get" class="ml-8 flex items-center relative" style="width: 75%;">
+    <form method="get" class="ml-16 flex items-center relative" style="width: 60%;">
     <input
         type="text"
         id="search"
@@ -63,7 +63,7 @@ try {
         onkeyup="fetchSuggestions(this.value)"
     >
     <!-- Suggestions affichées sous l'input -->
-    <div id="suggestions" class="hidden"></div>
+    <div id="suggestions" class="hidden "></div>
 </form>
 </header>
 
@@ -140,8 +140,8 @@ try {
         <p class="mt-4 text-sm">&copy; <?php echo date('Y'); ?> Catalogue. Tous droits réservés.</p>
     </div>
 </footer>
-
-</body>
+<!-- Superposition de fond gris -->
+<div id="overlay" class="hidden fixed inset-0 bg-gray-500 opacity-50 z-10"></div></body>
 </html>
 
 
@@ -151,30 +151,35 @@ function fetchSuggestions(query) {
     if (query.length === 0) {
         document.getElementById("suggestions").innerHTML = "";
         document.getElementById("suggestions").classList.add("hidden");
+        document.getElementById("suggestions").style.display = "none"; // Ajout de cette ligne
+        document.getElementById("overlay").classList.add("hidden");
         return;
     }
-
+    
     const xhr = new XMLHttpRequest();
     xhr.open("GET", "fetch_suggestions.php?query=" + encodeURIComponent(query), true);
     xhr.onload = function() {
         if (this.status === 200) {
             try {
-                const suggestions = JSON.parse(this.responseText); // Parse la réponse JSON
-                console.log(suggestions); // Affiche les suggestions dans la console pour vérification
-
+                const suggestions = JSON.parse(this.responseText);
+                console.log(suggestions);
                 let html = "";
+                
                 if (suggestions.length > 0) {
-                    suggestions.forEach(item => {
-                        html += `<div onclick="selectSuggestion(${item.idProduct}, '${item.name}')">${item.name}</div>`;
+                    suggestions.forEach((item, index) => {
+                        html += `<div onclick="selectSuggestion(${item.idProduct}, '${item.name}')"
+                        style="padding: 10px; cursor: pointer; border-bottom: 1px solid #ddd;">
+                            ${item.name}
+                        </div>`;
                     });
+                    document.getElementById("overlay").classList.remove("hidden");
                 } else {
-                    // Affichage d'un message personnalisé avec le texte de la recherche
                     html = `<div>Aucun résultat trouvé pour la recherche : <strong>${query}</strong></div>`;
+                    document.getElementById("overlay").classList.remove("hidden");
                 }
-
-                // Affiche les suggestions dans l'élément #suggestions
+                
                 document.getElementById("suggestions").innerHTML = html;
-                document.getElementById("suggestions").style.display = "block"; // Forcer l'affichage
+                document.getElementById("suggestions").style.display = "block";
                 document.getElementById("suggestions").classList.remove("hidden");
                 console.log("Suggestions mises à jour et affichées");
             } catch (e) {
@@ -185,6 +190,7 @@ function fetchSuggestions(query) {
     xhr.onerror = function() {
         document.getElementById("suggestions").innerHTML = "<div>Network error</div>";
         document.getElementById("suggestions").classList.remove("hidden");
+        document.getElementById("overlay").classList.remove("hidden");
     };
     xhr.send();
 }
@@ -193,8 +199,9 @@ function selectSuggestion(id, name) {
     document.getElementById("search").value = name;
     document.getElementById("suggestions").innerHTML = "";
     document.getElementById("suggestions").classList.add("hidden");
+    document.getElementById("suggestions").style.display = "none"; // Ajout de cette ligne
+    document.getElementById("overlay").classList.add("hidden");
     window.location.href = 'product_details.php?id=' + encodeURIComponent(id);
 }
-
 
 </script>
