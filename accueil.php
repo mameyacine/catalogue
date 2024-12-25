@@ -14,7 +14,7 @@ try {
 
 // ✅ Récupérer les produits depuis la base de données
 // ✅ Paramètres de pagination
-$produitsParPage = 6; // Nombre de produits par page
+$produitsParPage = 8; // Nombre de produits par page
 $page = isset($_GET['page']) && is_numeric($_GET['page']) ? intval($_GET['page']) : 1;
 $offset = ($page - 1) * $produitsParPage;
 
@@ -33,6 +33,22 @@ try {
 } catch(PDOException $e) {
     die("Erreur lors de la récupération des produits : " . $e->getMessage());
 }
+
+
+
+// Récupérer les catégories
+$categoriesStmt = $pdo->query("SELECT * FROM Category");
+$categories = $categoriesStmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Récupérer les produits avec les catégories
+$stmt = $pdo->prepare("SELECT Products.*, Category.name AS category_name 
+                       FROM Products
+                       JOIN Category ON Products.idCategory = Category.idCategory
+                       ORDER BY RAND() LIMIT :offset, :limit");
+$stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+$stmt->bindParam(':limit', $produitsParPage, PDO::PARAM_INT);
+$stmt->execute();
+$produits = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -62,35 +78,52 @@ try {
         class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 text-black focus:ring-[#176b61]"
         onkeyup="fetchSuggestions(this.value)"
     >
+    <!-- Crois pour supprimer le texte -->
+    <button type="button" id="clearSearch" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700" style="border: none; background: none;" onclick="clearSearch()">
+    <i class="fas fa-times"></i>
+</button>
     <!-- Suggestions affichées sous l'input -->
-    <div id="suggestions" class="hidden "></div>
+    <div id="suggestions" class="hidden"></div>
 </form>
+
 </header>
 
 
-<!-- ✅ Catalogue de produits -->
-<div class="container mx-auto my-8">
-    <h2 class="text-2xl font-bold text-center mb-6">Nos Produits</h2>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="container mx-auto my-8 flex">
+
+
+    <!-- Colonne des catégories à gauche -->
+    <div class="w-1/5 p-4 bg-white shadow-md rounded-lg mr-2">
+    <h3 class="text-xl font-bold mb-4">Catégories</h3>
+    <ul>
+        <?php foreach ($categories as $categorie): ?>
+            <li class="mb-2">
+                <!-- Lien vers la page des catégories avec l'ID de la catégorie -->
+                <a href="category_page.php?id=<?php echo $categorie['idCategory']; ?>" class="text-gray-600 hover:text-gray-900 hover:underline">
+                    <?php echo htmlspecialchars($categorie['name']); ?>
+                </a>
+            </li>
+        <?php endforeach; ?>
+    </ul>
+</div>
+    <!-- Colonne des produits à droite -->
+    <div class="w-4/5">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
         <?php if (!empty($produits)): ?>
-            <?php foreach ($produits as $produit): ?>
-                <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                <img src="<?php echo !empty($produit['img']) ? htmlspecialchars($produit['img']) : 'images/default.png'; ?>" 
-     alt="<?php echo !empty($produit['nom']) ? htmlspecialchars($produit['nom']) : 'Produit'; ?>" 
-     class="w-full h-48 object-cover">                    <div class="p-4">
-                        <h3 class="text-xl font-bold"><?php echo htmlspecialchars($produit['name']); ?></h3>
-                        <p class="text-gray-600">
-    <?php echo !empty($produit['description']) ? htmlspecialchars($produit['description']) : 'Aucune description disponible.'; ?>
-</p>                        <button class="custom-button">Voir Détails</button>
-                    </div>
-                </div>
-            <?php endforeach; ?>
+<?php foreach ($produits as $produit): ?>
+    <a href="product_details.php?id=<?php echo $produit['idProduct']; ?>" class="bg-white rounded-lg shadow-md overflow-hidden flex flex-col">
+        <img src="<?php echo !empty($produit['img']) ? htmlspecialchars($produit['img']) : 'images/default.png'; ?>" 
+             alt="<?php echo !empty($produit['name']) ? htmlspecialchars($produit['name']) : 'Produit'; ?>" 
+             class="w-full h-36 mb-2 object-cover">
+        <h3 class="text-l hover:underline m-2"><?php echo htmlspecialchars($produit['name']); ?></h3>
+    </a>
+<?php endforeach; ?>
         <?php else: ?>
             <p class="text-center text-gray-500">Aucun produit disponible pour le moment.</p>
         <?php endif; ?>
     </div>
 </div>
-
+</div>
 
 <!-- ✅ Pagination -->
 <div class="flex justify-center mt-8">
@@ -141,10 +174,7 @@ try {
     </div>
 </footer>
 <!-- Superposition de fond gris -->
-<div id="overlay" class="hidden fixed inset-0 bg-gray-500 opacity-50 z-10"></div></body>
-</html>
-
-
+<div id="overlay" class="hidden fixed inset-0 bg-gray-500 opacity-50 z-10"></div>
 <script>
 
 function fetchSuggestions(query) {
@@ -162,7 +192,6 @@ function fetchSuggestions(query) {
         if (this.status === 200) {
             try {
                 const suggestions = JSON.parse(this.responseText);
-                console.log(suggestions);
                 let html = "";
                 
                 if (suggestions.length > 0) {
@@ -181,7 +210,6 @@ function fetchSuggestions(query) {
                 document.getElementById("suggestions").innerHTML = html;
                 document.getElementById("suggestions").style.display = "block";
                 document.getElementById("suggestions").classList.remove("hidden");
-                console.log("Suggestions mises à jour et affichées");
             } catch (e) {
                 console.error("Erreur de parsing JSON : ", e);
             }
@@ -204,4 +232,36 @@ function selectSuggestion(id, name) {
     window.location.href = 'product_details.php?id=' + encodeURIComponent(id);
 }
 
+
+
+// Fonction pour effacer le texte dans le champ de recherche et masquer les suggestions
+function clearSearch() {
+        const searchInput = document.getElementById("search");
+        const suggestionsDiv = document.getElementById("suggestions");
+        const overlay = document.getElementById("overlay");
+
+        searchInput.value = ''; // Vider le champ de recherche
+        suggestionsDiv.innerHTML = ''; // Vider les suggestions
+        suggestions.style.display = "none";
+        suggestionsDiv.classList.add("hidden"); // Masquer les suggestions
+        overlay.classList.add("hidden"); // Masquer l'overlay
+    }
+
+
+    document.addEventListener('DOMContentLoaded', function() {
+    const clearButton = document.getElementById('clearSearch');
+
+    clearButton.addEventListener('click', clearSearch);
+});
 </script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+

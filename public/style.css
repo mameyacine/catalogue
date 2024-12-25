@@ -53,11 +53,6 @@
     background-color: #29aafe;
 }
 
-a:hover {
-    background-color: #145b50;
-    color: white;
-}
-
 
 #search {
     width: 100%;
@@ -97,4 +92,15 @@ form {
 
 .hidden {
     display: none; /* Assurez-vous qu'elle fonctionne correctement */
+}
+.overflow-hidden {
+    overflow-x: hidden; /* S'assurer qu'il n'y a pas de débordement horizontal */
+}
+
+.flex {
+    margin-right: 0; /* Supprimer l'espace à droite */
+}
+
+.flex-shrink-0 {
+    flex-shrink: 0; /* Empêcher le rétrécissement des éléments */
 }
