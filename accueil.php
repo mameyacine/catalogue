@@ -21,7 +21,7 @@ $offset = ($page - 1) * $produitsParPage;
 // ✅ Récupérer les produits avec LIMIT et OFFSET
 // ✅ Récupérer les produits avec LIMIT, OFFSET et tri aléatoire
 try {
-    $stmt = $pdo->prepare("SELECT * FROM Products ORDER BY RAND() LIMIT :offset, :limit");
+    $stmt = $pdo->prepare("SELECT * FROM Products LIMIT :offset, :limit");
     $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
     $stmt->bindParam(':limit', $produitsParPage, PDO::PARAM_INT);
     $stmt->execute();
@@ -44,7 +44,7 @@ $categories = $categoriesStmt->fetchAll(PDO::FETCH_ASSOC);
 $stmt = $pdo->prepare("SELECT Products.*, Category.name AS category_name 
                        FROM Products
                        JOIN Category ON Products.idCategory = Category.idCategory
-                       ORDER BY RAND() LIMIT :offset, :limit");
+                        LIMIT :offset, :limit");
 $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
 $stmt->bindParam(':limit', $produitsParPage, PDO::PARAM_INT);
 $stmt->execute();
@@ -66,8 +66,9 @@ $produits = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <!-- ✅ Header -->
 <header class="bg-white px-4 flex items-center shadow-md" style="height: 80px;">
-    <img src="images/logo-removebg.png" alt="Logo" class="h-full ml-2 object-contain">
-    
+<a href="accueil.php" class="flex items-center">
+        <img src="images/logo-removebg.png" alt="Logo" class="h-auto" style="max-height: 80px; margin-left: 8px; transition: transform 0.2s; transform: scale(1);">
+    </a>    
     <!-- Barre de recherche -->
     <form method="get" class="ml-16 flex items-center relative" style="width: 60%;">
     <input

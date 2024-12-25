@@ -61,8 +61,9 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
 
 <!-- Header -->
 <header class="bg-white px-4 flex items-center shadow-md" style="height: 80px;">
-    <img src="images/logo-removebg.png" alt="Logo" class="h-full ml-2 object-contain">
-    
+<a href="accueil.php" class="flex items-center">
+        <img src="images/logo-removebg.png" alt="Logo" class="h-auto" style="max-height: 80px; margin-left: 8px; transition: transform 0.2s; transform: scale(1);">
+    </a>    
     <!-- Barre de recherche -->
     <form method="get" class="ml-16 flex items-center relative" style="width: 60%;">
     <input
@@ -82,6 +83,7 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
 </form>
 
 </header>
+
 
 
 <!-- Détails du produit -->
