@@ -29,10 +29,15 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
 
         // Récupérer des produits similaires (par catégorie par exemple)
         $category = $produit['idCategory'];
-        $stmt_similaires = $pdo->prepare("SELECT * FROM Products WHERE idCategory = :idCategory AND idProduct != :id ");        $stmt_similaires->bindParam(':idCategory', $category, PDO::PARAM_INT);
+        $stmt_similaires = $pdo->prepare("SELECT * FROM Products WHERE idCategory = :idCategory AND idProduct != :id");
+        $stmt_similaires->bindParam(':idCategory', $category, PDO::PARAM_INT);
         $stmt_similaires->bindParam(':id', $idProduit, PDO::PARAM_INT);
         $stmt_similaires->execute();
         $produitsSimilaires = $stmt_similaires->fetchAll(PDO::FETCH_ASSOC);
+
+        if (empty($produitsSimilaires)) {
+            echo "Aucun produit similaire trouvé.";
+        }
 
     } catch (PDOException $e) {
         die("Erreur lors de la récupération du produit : " . $e->getMessage());
@@ -147,8 +152,92 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
         <p class="mt-4 text-sm">&copy; <?php echo date('Y'); ?> Catalogue. Tous droits réservés.</p>
     </div>
 </footer>
+<div id="overlay" class="hidden fixed inset-0 bg-gray-500 opacity-50 z-10"></div>
 
 <script>
+
+function fetchSuggestions(query) {
+    const productId = <?php echo $idProduit; ?>; // Récupère l'ID du produit actuel
+    if (query.length === 0) {
+        document.getElementById("suggestions").innerHTML = "";
+        document.getElementById("suggestions").classList.add("hidden");
+        document.getElementById("suggestions").style.display = "none"; 
+        document.getElementById("overlay").classList.add("hidden");
+        return;
+    }
+    
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", "fetch_suggestions.php?query=" + encodeURIComponent(query) + "&exclude=" + productId, true);
+    xhr.onload = function() {
+        if (this.status === 200) {
+            try {
+                const suggestions = JSON.parse(this.responseText);
+                let html = "";
+                
+                if (suggestions.length > 0) {
+                    suggestions.forEach((item, index) => {
+                        html += `<div onclick="selectSuggestion(${item.idProduct}, '${item.name}')"
+                        style="padding: 10px; cursor: pointer; border-bottom: 1px solid #ddd;">
+                            ${item.name}
+                        </div>`;
+                    });
+                    document.getElementById("overlay").classList.remove("hidden");
+                } else {
+                    html = `<div>Aucun résultat trouvé pour la recherche : <strong>${query}</strong></div>`;
+                    document.getElementById("overlay").classList.remove("hidden");
+                }
+                
+                document.getElementById("suggestions").innerHTML = html;
+                document.getElementById("suggestions").style.display = "block";
+                document.getElementById("suggestions").classList.remove("hidden");
+            } catch (e) {
+                console.error("Erreur de parsing JSON : ", e);
+            }
+        }
+    };
+    xhr.onerror = function() {
+        document.getElementById("suggestions").innerHTML = "<div>Network error</div>";
+        document.getElementById("suggestions").classList.remove("hidden");
+        document.getElementById("overlay").classList.remove("hidden");
+    };
+    xhr.send();
+}
+
+
+
+
+function selectSuggestion(id, name) {
+    document.getElementById("search").value = name;
+    document.getElementById("suggestions").innerHTML = "";
+    document.getElementById("suggestions").classList.add("hidden");
+    document.getElementById("suggestions").style.display = "none"; // Ajout de cette ligne
+    document.getElementById("overlay").classList.add("hidden");
+    window.location.href = 'product_details.php?id=' + encodeURIComponent(id);
+}
+
+
+
+// Fonction pour effacer le texte dans le champ de recherche et masquer les suggestions
+function clearSearch() {
+        const searchInput = document.getElementById("search");
+        const suggestionsDiv = document.getElementById("suggestions");
+        const overlay = document.getElementById("overlay");
+
+        searchInput.value = ''; // Vider le champ de recherche
+        suggestionsDiv.innerHTML = ''; // Vider les suggestions
+        suggestions.style.display = "none";
+        suggestionsDiv.classList.add("hidden"); // Masquer les suggestions
+        overlay.classList.add("hidden"); // Masquer l'overlay
+    }
+
+
+    document.addEventListener('DOMContentLoaded', function() {
+    const clearButton = document.getElementById('clearSearch');
+
+    clearButton.addEventListener('click', clearSearch);
+});
+
+
 document.addEventListener('DOMContentLoaded', function() {
     const prevBtn = document.querySelector('[aria-label="Précédent"]');
     const nextBtn = document.querySelector('[aria-label="Suivant"]');
@@ -218,6 +307,11 @@ document.addEventListener('DOMContentLoaded', function() {
         nextBtn.style.display = 'none';
     }
 });
+
+
+
+
+
 </script>
 </body>
 </html>
